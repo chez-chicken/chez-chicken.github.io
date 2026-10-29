@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Chez Chicken: بروست، استربس، برجر فراخ، بيتزا وباستا وبوكسات. اطلب أونلاين وكمّل على واتساب.">
+<meta property="og:title" content="Chez Chicken">
+<meta property="og:description" content="اطلب بروست واستربس وبيتزا وبوكسات أونلاين، والطلب على واتساب.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="img/og.jpg">
+<link rel="icon" type="image/webp" href="img/mark.webp">
+<title>Chez Chicken</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Tajawal:wght@400;500;700&family=DM+Serif+Display&display=swap">
+<style>
+/* Layout: burgundy ground with a gold arch (echoing the logo) holding the food photos in the hero,
+   then a sticky search + category strip, one-column menu cards with round photo headers, bottom cart sheet.
+   Single deliberate theme: the brand is burgundy and gold, so no light variant. */
+:root {
+  --wine: #5A0B16;
+  --wine-deep: #38060E;
+  --wine-card: #6B1220;
+  --gold: #FFD60A;
+  --gold-ink: #2B0509;
+  --cream: #FFF3DD;
+  --muted: #E0BDB1;
+  --line: rgba(255, 228, 196, .2);
+  --ok: #8FE3A2;
+  --bad: #FFB4A8;
+  --font-display: 'Reem Kufi', 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+  --font-latin: 'DM Serif Display', Georgia, serif;
+  --font-body: 'Tajawal', 'Segoe UI', Tahoma, system-ui, sans-serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+body { background: var(--wine-deep); color: var(--cream); font-family: var(--font-body); font-size: 16px; line-height: 1.65; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 50; background: var(--wine-deep); }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.wrap { max-width: 1060px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.num { direction: ltr; unicode-bidi: isolate; display: inline-block; font-variant-numeric: tabular-nums; }
+
+.closed { background: var(--gold); color: var(--gold-ink); text-align: center; padding: 10px 16px; font-weight: 700; }
+
+/* hero */
+.hero { background: radial-gradient(120% 90% at 70% 0%, #7A1020 0%, var(--wine) 45%, var(--wine-deep) 100%); overflow: hidden; position: relative; isolation: isolate; }
+.hero #fx, .hero #heroVideo { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; }
+.hero #heroVideo { object-fit: cover; opacity: 0; transition: opacity .8s; }
+.hero #heroVideo.on { opacity: 1; }
+.hero.vid::after { background: linear-gradient(180deg, rgba(40,4,10,.62), rgba(40,4,10,.78)); }
+.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(56,6,14,.35), rgba(56,6,14,.55)); pointer-events: none; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 20px 40px; align-items: center; padding-block: 18px 44px; }
+.topbar { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand img { height: 46px; width: auto; display: block; }
+.logo { width: min(290px, 70%); height: auto; display: block; margin: 0 0 14px; }
+.cart-top { border: 1.5px solid var(--gold); background: transparent; color: var(--gold); border-radius: 999px; padding: 6px 16px; font-weight: 700; display: flex; gap: 8px; align-items: center; }
+.cart-top b { background: var(--gold); color: var(--gold-ink); border-radius: 999px; min-width: 24px; text-align: center; font-variant-numeric: tabular-nums; }
+.hero h1 { font: 700 clamp(2.2rem, 7vw, 3.9rem)/1.2 var(--font-display); margin: 8px 0 12px; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--gold); }
+.hero p { color: var(--muted); max-width: 46ch; margin: 0 0 20px; font-size: 1.05rem; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; padding: 0; list-style: none; }
+.facts li { border: 1px solid var(--line); border-radius: 999px; padding: 2px 14px; font-size: .9rem; }
+.cta { display: inline-block; background: var(--gold); color: var(--gold-ink); font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 999px; }
+.cta:hover { background: var(--cream); }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+.quick a { text-decoration: none; border: 1.5px solid var(--gold); color: var(--gold); border-radius: 999px; padding: 5px 16px; font-weight: 700; font-size: .95rem; backdrop-filter: blur(4px); background: rgba(40,4,10,.35); }
+.quick a:hover, .quick a:focus-visible { background: var(--gold); color: var(--gold-ink); }
+.arch { justify-self: center; width: min(100%, 270px); background: var(--gold); border-radius: 999px 999px 28px 28px; padding: 22px 18px 20px; display: grid; gap: 4px; justify-items: center; }
+.arch img { width: 100%; max-width: 190px; height: auto; display: block; }
+.arch img:nth-child(2) { max-width: 170px; margin-top: -8px; }
+.arch img:nth-child(3) { max-width: 190px; margin-top: -4px; }
+@media (max-width: 720px) { .hero .wrap { grid-template-columns: 1fr; } .arch { grid-row: 2; width: min(78%, 240px); } }
+
+/* tools: search + chips */
+.tools { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; background: var(--wine-deep); border-bottom: 1px solid var(--line); }
+.tools .wrap { padding-block: 10px; display: grid; gap: 10px; }
+.search { position: relative; }
+.search input { width: 100%; background: var(--wine); border: 1.5px solid var(--line); border-radius: 999px; padding: 9px 44px 9px 16px; font-size: 16px; }
+.search input::placeholder { color: var(--muted); }
+.search input:focus { border-color: var(--gold); outline: none; }
+.search svg { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 2; pointer-events: none; }
+.chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chips::-webkit-scrollbar { display: none; }
+.chips a { flex: none; text-decoration: none; padding: 3px 15px; border: 1.5px solid var(--line); border-radius: 999px; font-weight: 500; font-size: .93rem; }
+.chips a.on { background: var(--gold); color: var(--gold-ink); border-color: var(--gold); font-weight: 700; }
+
+/* menu */
+.menu { display: grid; gap: 34px; padding-block: 28px 130px; }
+.sec { scroll-margin-top: 130px; }
+.sec-head { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+.sec-head img { width: 64px; height: 64px; object-fit: contain; flex: none; }
+.sec-head h2 { font: 700 1.9rem/1.2 var(--font-display); margin: 0; color: var(--gold); }
+.sec-head p { margin: 0; color: var(--muted); font-size: .92rem; }
+.list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 0 44px; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.item h3 { margin: 0; font-size: 1.08rem; font-weight: 700; line-height: 1.4; }
+.item p { margin: 2px 0 0; color: var(--muted); font-size: .86rem; line-height: 1.55; }
+.opts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.add { border: 0; border-radius: 999px; background: var(--gold); color: var(--gold-ink); padding: 7px 15px; font-weight: 700; display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.add small { font-size: .75rem; font-weight: 500; }
+.add:hover { background: var(--cream); }
+.add.pop { animation: pop .3s ease; }
+@keyframes pop { 50% { transform: scale(1.1); } }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px; margin-top: 12px; }
+.card { background: var(--wine-card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.card .ph { aspect-ratio: 4 / 3; background: #3A0710; position: relative; overflow: hidden; }
+.card .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .ph img.fb { object-fit: contain; padding: 8%; background: #F4B900; }
+.card .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.card h3 { font-size: 1.05rem; margin: 0; }
+.card p { margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.5; flex: 1; }
+.card .opts { margin-top: 10px; justify-content: flex-start; }
+@media (max-width: 520px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .card .body { padding: 10px 11px 12px; } .card h3 { font-size: .98rem; } .card p { font-size: .76rem; } .card .add { padding: 6px 11px; font-size: .92rem; } }
+.none { text-align: center; color: var(--muted); padding: 40px 0; }
+@media (max-width: 460px) { .item { grid-template-columns: 1fr; } .opts { justify-content: flex-start; } }
+
+/* contact */
+.contact { background: var(--wine); }
+.contact .wrap { padding-block: 40px 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 28px 48px; }
+.contact h2 { font: 700 2rem/1.2 var(--font-display); margin: 0 0 12px; color: var(--gold); }
+.contact dl { margin: 0; display: grid; gap: 12px; }
+.contact dt { color: var(--muted); font-size: .85rem; }
+.contact dd { margin: 0; font-weight: 700; font-size: 1.1rem; }
+.btns { display: flex; flex-wrap: wrap; gap: 10px; align-content: start; }
+.btn { display: inline-block; text-align: center; text-decoration: none; border: 1.5px solid var(--gold); border-radius: 999px; padding: 11px 22px; font-weight: 700; background: var(--gold); color: var(--gold-ink); }
+.btn.ghost { background: transparent; color: var(--gold); }
+.btn:hover { filter: brightness(1.1); }
+footer { background: var(--wine-deep); text-align: center; color: var(--muted); font-size: .85rem; padding: 18px 16px 110px; }
+
+/* cart bar and sheet */
+.cartbar { position: fixed; z-index: 30; bottom: 0; left: 0; right: 0; padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: linear-gradient(transparent, var(--wine-deep) 45%); }
+.cartbar button { display: flex; justify-content: space-between; align-items: center; width: min(100%, 560px); margin: 0 auto; border: 0; border-radius: 999px; padding: 13px 22px; background: var(--gold); color: var(--gold-ink); font-weight: 700; box-shadow: 0 8px 28px rgba(0,0,0,.45); }
+.sheet { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; background: rgba(15, 2, 5, .72); }
+.panel { background: var(--wine); width: min(100%, 580px); max-height: 94%; overflow-y: auto; border-radius: 22px 22px 0 0; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.panel header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.panel h2 { font: 700 1.7rem/1.2 var(--font-display); margin: 0; color: var(--gold); }
+.x { border: 1.5px solid var(--line); background: transparent; border-radius: 999px; width: 38px; height: 38px; }
+.line { padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
+.line .top { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+.line b { font-weight: 700; }
+.lp { font-variant-numeric: tabular-nums; min-width: 66px; text-align: left; font-weight: 700; }
+.qty { display: flex; align-items: center; border: 1.5px solid var(--line); border-radius: 999px; }
+.qty button { width: 34px; height: 34px; border: 0; background: transparent; font-size: 1.15rem; }
+.qty span { min-width: 24px; text-align: center; font-variant-numeric: tabular-nums; }
+.line input { width: 100%; background: transparent; border: 0; border-bottom: 1px dashed var(--line); padding: 3px 0; font-size: 14px; }
+.line input::placeholder { color: var(--muted); }
+.line input:focus { border-color: var(--gold); outline: none; }
+.upsell { padding: 12px 0 2px; }
+.upsell small { color: var(--muted); display: block; margin-bottom: 6px; }
+.upsell .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.upsell button { border: 1.5px solid var(--gold); background: transparent; color: var(--gold); border-radius: 999px; padding: 4px 14px; font-size: .9rem; font-weight: 500; }
+.sum { display: grid; gap: 4px; padding: 12px 0; font-variant-numeric: tabular-nums; }
+.sum div { display: flex; justify-content: space-between; color: var(--muted); }
+.sum .grand { color: var(--cream); font-weight: 700; font-size: 1.25rem; }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 14px; }
+.modes input { position: absolute; opacity: 0; pointer-events: none; }
+.modes label { border: 1.5px solid var(--line); border-radius: 999px; text-align: center; padding: 7px 4px; font-weight: 500; cursor: pointer; font-size: .95rem; }
+.modes input:checked + label { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); font-weight: 700; }
+.modes input:focus-visible + label { outline: 3px solid var(--cream); outline-offset: 2px; }
+.field { display: grid; gap: 4px; margin-bottom: 12px; }
+.field label { font-size: .88rem; color: var(--muted); }
+.field input, .field textarea { width: 100%; background: var(--wine-deep); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 16px; }
+.field input:focus, .field textarea:focus { border-color: var(--gold); outline: none; }
+#err { color: var(--bad); font-weight: 500; min-height: 1.4em; margin: 2px 0 8px; }
+.hint { color: var(--muted); font-size: .82rem; margin: 8px 0 0; text-align: center; }
+.panel .btn { display: block; width: 100%; }
+.toast { position: fixed; z-index: 70; left: 50%; transform: translateX(-50%); bottom: calc(88px + env(safe-area-inset-bottom, 0px)); background: var(--cream); color: var(--gold-ink); padding: 7px 18px; border-radius: 999px; font-weight: 700; font-size: .9rem; }
+@media (prefers-reduced-motion: reduce) { .add.pop { animation: none; } html { scroll-behavior: auto; } }
+
+/* Added only: soft scroll entrance for sandwich & chicken burger photos. */
+@media (prefers-reduced-motion: no-preference) {
+  #sec-sand .card.food-motion-ready,
+  #sec-burger .card.food-motion-ready {
+    opacity: 0;
+    transform: translate3d(0, 34px, 0) scale(.96);
+    transition: opacity .7s ease, transform .8s cubic-bezier(.2,.7,.2,1);
+    transition-delay: var(--food-delay, 0ms);
+  }
+  #sec-sand .card.food-motion-ready.food-motion-visible,
+  #sec-burger .card.food-motion-ready.food-motion-visible {
+    opacity: 1;
+    transform: translate3d(0,0,0) scale(1);
+  }
+  #sec-sand .card.food-motion-visible .ph img,
+  #sec-burger .card.food-motion-visible .ph img {
+    animation: chez-food-float 4.6s ease-in-out infinite;
+    animation-delay: var(--food-float-delay, 0ms);
+  }
+  @keyframes chez-food-float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+}
+</style>
+<style id="bilingual-switch-style">
+/* Only the language control; original website CSS is left intact. */
+#langToggle {border:1.5px solid var(--gold);background:rgba(40,4,10,.35);color:var(--gold);border-radius:999px;padding:6px 12px;font:700 .9rem var(--font-body);white-space:nowrap;cursor:pointer}
+#langToggle:hover,#langToggle:focus-visible {background:var(--gold);color:var(--gold-ink)}
+html[dir="ltr"] .search svg {right:auto;left:15px}
+html[dir="ltr"] .search input {padding:9px 16px 9px 44px}
+</style>
+
+<style id="theme-switch-style">
+/* Opt-in light mode; default dark palette and hero assets remain untouched. */
+.theme-controls {display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-inline-start:auto}
+#themeToggle {border:1.5px solid var(--gold);background:rgba(40,4,10,.35);color:var(--gold);border-radius:999px;padding:6px 12px;font:700 .9rem var(--font-body);white-space:nowrap;cursor:pointer}
+#themeToggle:hover,#themeToggle:focus-visible{background:var(--gold);color:var(--gold-ink)}
+@media(max-width:380px){#themeToggle,#langToggle{padding:5px 8px;font-size:.8rem}.brand img{height:38px}.cart-top{padding:6px 10px}}
+html[data-theme="light"]{color-scheme:light;--wine:#FFF7ED;--wine-deep:#FFFFFF;--wine-card:#FFFAF2;--cream:#27171A;--muted:#6B5354;--line:rgba(76,31,34,.20);--bad:#A6242C}
+/* Keep the original deep-wine hero, its video, spark effect, logo and gold arch identical. */
+html[data-theme="light"] .hero{--wine:#5A0B16;--wine-deep:#38060E;--cream:#FFF3DD;--muted:#E0BDB1;--line:rgba(255,228,196,.2);color:#FFF3DD}
+html[data-theme="light"] .hero .facts,html[data-theme="light"] .hero .brand{color:#FFF3DD}
+html[data-theme="light"] .hero .cart-top{color:#FFD60A}
+html[data-theme="light"] .hero #themeToggle{color:#FFD60A}
+html[data-theme="light"] .hero #langToggle{color:#FFD60A}
+html[data-theme="light"] .hero #themeToggle:hover,html[data-theme="light"] .hero #langToggle:hover{color:#2B0509}
+html[data-theme="light"] .sec-head h2,html[data-theme="light"] .contact h2,html[data-theme="light"] .panel h2{color:#6A1022}
+html[data-theme="light"] .field input,html[data-theme="light"] .field textarea{background:#FFFFFF}
+html[data-theme="light"] .search input{background:#FFFFFF}
+html[data-theme="light"] .card .ph{background:#F0E4D7}
+html[data-theme="light"] .btn.ghost{color:#6A1022;border-color:#6A1022}
+html[data-theme="light"] .upsell button{color:#6A1022;border-color:#6A1022}
+html[data-theme="light"] .closed{color:#2B0509}
+html[data-theme="light"] .toast{background:#38060E;color:#FFF3DD}
+html[data-theme="light"] .cartbar button,html[data-theme="light"] .add,html[data-theme="light"] .cta,html[data-theme="light"] .btn:not(.ghost),html[data-theme="light"] .modes input:checked + label{color:#2B0509}
+</style>
+</head>
+<body>
+
+
+<div id="app" dir="rtl" lang="ar">
+  <div class="closed" id="closed" hidden></div>
+
+  <section class="hero">
+    <canvas id="fx" aria-hidden="true"></canvas>
+    <video id="heroVideo" muted loop playsinline preload="auto" aria-hidden="true"></video>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand"><img src="img/mark.webp" alt="Chez Chicken"></div>
+        <div class="theme-controls"><button id="langToggle" type="button" aria-label="Switch to English">EN</button><button id="themeToggle" type="button" aria-label="الوضع الفاتح" aria-pressed="false">☀️ فاتح</button></div>
+        <button class="cart-top" id="cartTop" type="button">السلة <b id="cartTopN">0</b></button>
+      </div>
+      <div>
+        <img class="logo" src="img/logo.webp" alt="Chez Chicken">
+        <h1>كرسبي <em>سخن</em> وبيتزا وباستا لحد مكانك</h1>
+        <p>بروست واستربس وبرجر فراخ وبوكسات للشلة والعيلة. اختار من المنيو وكمّل الطلب على واتساب.</p>
+        <ul class="facts"><li>Zee Hub Mall، طريق الواحات</li><li>كاش عند الاستلام</li><li>الطلب على واتساب</li></ul>
+        <a class="cta" href="#menu" data-go="menu">شوف المنيو</a>
+        <nav class="quick" aria-label="اختصارات"><a href="#sec-sand" data-go="sec-sand">سندوتشات</a><a href="#sec-burger" data-go="sec-burger">برجر</a><a href="#sec-roast" data-go="sec-roast">بروست</a><a href="#sec-boxes" data-go="sec-boxes">بوكسات</a><a href="#sec-pizza" data-go="sec-pizza">بيتزا</a><a href="#sec-pasta" data-go="sec-pasta">باستا</a></nav>
+      </div>
+      <div class="arch" aria-hidden="true">
+        <img src="img/wings.webp" alt="">
+        <img src="img/pizza.webp" alt="">
+        <img src="img/burger.webp" alt="">
+      </div>
+    </div>
+  </section>
+
+  <div class="tools">
+    <div class="wrap">
+      <div class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="دوّر في المنيو، مثلًا: رانش، بيتزا، 5 قطع" aria-label="بحث في المنيو" autocomplete="off">
+      </div>
+      <nav class="chips" id="chips" aria-label="أقسام المنيو"></nav>
+    </div>
+  </div>
+
+  <main class="wrap menu" id="menu"></main>
+
+  <section class="contact" id="contact">
+    <div class="wrap">
+      <div>
+        <h2>اطلب أو اسأل</h2>
+        <dl>
+          <div><dt>العنوان</dt><dd>طريق الواحات، Zee Hub Mall، بجوار جامعة MSA</dd></div>
+          <div><dt>واتساب وتليفون</dt><dd><span class="num" id="phoneShow"></span></dd></div>
+          <div id="hoursRow" hidden><dt>مواعيد الشغل</dt><dd id="hoursShow"></dd></div>
+        </dl>
+      </div>
+      <div class="btns">
+        <a class="btn" id="waContact" href="#" target="_blank" rel="noopener">كلمنا على واتساب</a>
+        <a class="btn ghost" id="callContact" href="#">اتصل بينا</a>
+        <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noopener">الموقع على الخريطة</a>
+        <a class="btn ghost" id="fbLink" href="#" target="_blank" rel="noopener">صفحتنا على فيسبوك</a>
+      </div>
+    </div>
+  </section>
+  <footer>© 2026 Chez Chicken. كل الحقوق محفوظة.</footer>
+
+  <div class="cartbar" id="cartbar" hidden>
+    <button type="button" id="cartOpen"><span>عرض السلة (<span id="cbN">0</span>)</span><span><span id="cbT">0</span> ج</span></button>
+  </div>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <header><h2 id="sheetTitle">سلتك</h2><button class="x" type="button" id="sheetClose" aria-label="إغلاق">✕</button></header>
+      <div id="lines"></div>
+      <div class="upsell" id="upsell" hidden><small>ضيف على طلبك</small><div class="row" id="upsellRow"></div></div>
+      <div class="sum" id="sum"></div>
+      <div id="checkout">
+        <div class="modes" role="radiogroup" aria-label="طريقة الاستلام">
+          <input type="radio" name="mode" id="m-delivery" value="delivery" checked><label for="m-delivery">توصيل</label>
+          <input type="radio" name="mode" id="m-takeaway" value="takeaway"><label for="m-takeaway">استلام</label>
+          <input type="radio" name="mode" id="m-dine" value="dine"><label for="m-dine">داخل المطعم</label>
+        </div>
+        <div class="field"><label for="f-name">الاسم</label><input id="f-name" autocomplete="name"></div>
+        <div class="field"><label for="f-phone">رقم الموبايل</label><input id="f-phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" style="text-align:right"></div>
+        <div class="field" id="w-address"><label for="f-address">العنوان بالتفصيل</label><input id="f-address" autocomplete="street-address"></div>
+        <div class="field" id="w-table" hidden><label for="f-table">رقم الترابيزة</label><input id="f-table" inputmode="numeric"></div>
+        <div class="field"><label for="f-notes">ملاحظات على الطلب (اختياري)</label><textarea id="f-notes" rows="2"></textarea></div>
+        <div id="err" role="alert"></div>
+        <a class="btn" id="send" href="#" target="_blank" rel="noopener">ابعت الطلب على واتساب</a>
+        <p class="hint">هيفتح واتساب والطلب مكتوب جاهز. اضغط إرسال هناك عشان يوصلنا.</p>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast" hidden>اتضاف للسلة</div>
+</div>
+
+<script>
+/* ---- settings: edit these ---- */
+var WHATSAPP = '201013101395';          // international format, no plus sign
+var PHONE_SHOW = '010 1310 1395';
+var PHONE_TEL = '01013101395';
+var FACEBOOK = 'https://www.facebook.com/share/1DPbMeWU2T/?mibextid=wwXIfr';
+var MAP_URL = 'https://www.google.com/maps/search/?api=1&query=Zee+Hub+Mall+Wahat+Road+MSA';
+var IS_OPEN = true;                     // manual switch, used when ENABLE_HOURS is false
+var ENABLE_HOURS = false;               // true = open and close automatically by HOURS (Cairo time)
+var HOURS = { open: '12:00', close: '02:00' };   // close earlier than open means it runs past midnight
+var DELIVERY_FEE = 0;                   // EGP, added to delivery orders
+var FREE_DELIVERY_OVER = 0;             // 0 = off; e.g. 300 makes delivery free from 300 EGP
+var MIN_ORDER = 0;                      // EGP, 0 = no minimum
+var HERO_VIDEO = 'hero.mp4';            // hero background video (muted, loops). Empty string = animated sparks only
+var ORDER_ENDPOINT = '';                // optional: a URL that receives each order as JSON (for a shop dashboard)
+
+/* ---- menu ---- */
+var BURGER = [
+  { id: 'halapeno', n: 'تشكن هالبينو', d: 'برجر فراخ، هالبينو، ساوزند آيلاند، خس، خيار مخلل، صوص حار، صوص شيدر', p: { 'سنجل': 120, 'دبل': 190 } },
+  { id: 'turbo-beef', n: 'تربو تشكن بيف', d: 'برجر فراخ، لحمة مفرومة مكرملة، خس، خيار مخلل، تيكساس', p: { 'سنجل': 150, 'دبل': 200 } },
+  { id: 'ranch-burger', n: 'ذا رانش', d: 'برجر فراخ، صوص رانش، خس، خيار مخلل', p: { 'سنجل': 120, 'دبل': 190 } },
+  { id: 'zastifal', n: 'زاستيفال', d: 'برجر فراخ، فلفل مكرمل، رانش، باربكيو، خس، خيار مخلل', p: { 'سنجل': 130, 'دبل': 190 } }
+];
+var SAND = [
+  { id: 'classic', n: 'كلاسيك', d: 'صدور فراخ، صوص ساوزند آيلاند، خس، خيار مخلل، رومي مدخن', p: { 'سنجل': 120, 'دبل': 190 } },
+  { id: 'zinger', n: 'زنجر', d: 'صدور فراخ، كاتشب، ساوزند آيلاند، هوت صوص، خس، خيار مخلل', p: { 'سنجل': 120, 'دبل': 190 } },
+  { id: 'chicken-wrap', n: 'تشكن راب', d: 'صدور فراخ، موتزاريلا، خس، خيار مخلل، صوص ساوزند آيلاند، كاتشب', p: 120 },
+  { id: 'the-ranch', n: 'ذا رانش', d: 'صدور فراخ، صوص رانش، خس، خيار مخلل، رومي مدخن', p: { 'سنجل': 120, 'دبل': 190 } },
+  { id: 'rings', n: 'رينجز', d: 'صدور فراخ، صوص باربكيو، خس، خيار مخلل، حلقات بصل، بيكون', p: { 'سنجل': 120, 'دبل': 190 } },
+  { id: 'sugar', n: 'شوجر', d: 'صدور فراخ، كلوسلو، باربكيو', p: { 'سنجل': 120, 'دبل': 190 } },
+  { id: 'crunchy', n: 'كرنشي', d: 'صدور فراخ، كرنشي، صوص رانش، خس، خيار مخلل، صوص سوي تشيلي', p: { 'سنجل': 120, 'دبل': 190 } },
+  { id: 'mushroom', n: 'تشكن مشروم', d: 'صدور فراخ، صوص رانش، مشروم فريش، خس، خيار مخلل', p: { 'سنجل': 130, 'دبل': 190 } },
+  { id: 'steak-chicken', n: 'ستيك تشكن', d: 'صدور فراخ، صوص رانش، خس، خيار مخلل، موتزاريلا ستيكس، بيكون، صوص سوي تشيلي', p: { 'سنجل': 130, 'دبل': 190 } },
+  { id: 'shi-chicken', n: 'سندوتش شي تشكن', d: 'صدور فراخ، صوص باربكيو، صوص تيكساس، موتزاريلا ستيكس، حلقات بصل، خس، خيار مخلل، بيكون', p: { 'سنجل': 130, 'دبل': 200 } },
+  { id: 'dinosaur', n: 'الديناصور', d: '3 طبقات صدور فراخ، خيار مخلل، خس، بيكون، رومي مدخن، موتزاريلا ستيكس، حلقات بصل، ساوزند آيلاند، كاتشب', p: 270 },
+  { id: 'fries-wrap', n: 'بطاطس راب', d: 'بطاطس، موتزاريلا ستيكس، صوص ساوزند آيلاند، كاتشب', p: 70 }
+];
+var MENU = [
+  { id: 'roast', t: 'وجبات بروست', img: 'img/plate2.webp', pre: 'وجبة بروست', note: 'كل وجبة معها عيش وبطاطس وصوص', items: [
+    { n: '2 قطعة', d: '2 عيش، بطاطس، صوص', p: 120 }, { n: '3 قطع', d: '2 عيش، بطاطس، صوص', p: 165 },
+    { n: '5 قطع', d: '3 عيش، بطاطس، صوص', p: 265 }, { n: '9 قطع', d: '5 عيش، بطاطس، صوص', p: 430 },
+    { n: '12 قطعة', d: '7 عيش، بطاطس، صوص، 3 أرز', p: 540 }, { n: '18 قطعة', d: '10 عيش، بطاطس، صوص، 4 أرز', p: 770 }
+  ]},
+  { id: 'boxes', t: 'بوكسات', img: 'img/plate3.webp', items: [
+    { n: 'بوكس السعادة', d: '2 قطعة بروست، 2 قطعة استربس، 2 عيش، بطاطس، صوص، كلوسلو', p: 200 },
+    { n: 'بوكس الصحاب', d: '4 قطع بروست، 4 قطع استربس، 4 عيش، بطاطس، صوص، كلوسلو', p: 375 },
+    { n: 'بوكس العيلة', d: '6 قطع بروست، 6 قطع استربس، 6 عيش، بطاطس، صوص، كلوسلو', p: 540 },
+    { n: 'وجبة الأطفال', d: 'قطعة بروست، قطعة استربس، عيش، عصير', p: 115 }
+  ]},
+  { id: 'strips', t: 'وجبات الاستربس', img: 'img/plate1.webp', pre: 'استربس', note: 'كل وجبة معها صوص وعيش وبطاطس', items: [
+    { n: '3 قطع', d: 'صوص، 2 عيش، بطاطس', p: 120 }, { n: '7 قطع', d: 'صوص، 4 عيش، بطاطس', p: 240 },
+    { n: '12 قطعة', d: 'صوص، 6 عيش، بطاطس', p: 370 }, { n: '20 قطعة', d: 'صوص، 10 عيش، بطاطس، 3 أرز', p: 620 }
+  ]},
+  { id: 'mos7ab', t: 'مسحب جبنة', img: 'img/wings.webp', pre: 'مسحب جبنة', note: 'كل وجبة معها صوص شيدر وعيش وبطاطس', items: [
+    { n: '3 قطع', d: 'صوص شيدر، 2 عيش، بطاطس', p: 140 }, { n: '7 قطع', d: 'صوص شيدر، 4 عيش، بطاطس', p: 280 },
+    { n: '12 قطعة', d: 'صوص شيدر، 6 عيش، بطاطس', p: 440 }
+  ]},
+  { id: 'burger', t: 'برجر فراخ', img: 'img/burger.webp', pre: 'برجر', note: 'اختار سنجل أو دبل', items: BURGER },
+  { id: 'sand', t: 'سندوتشات', img: 'img/burger.webp', pre: 'سندوتش', note: 'اختار سنجل أو دبل', items: SAND },
+  { id: 'pizza', t: 'بيتزا', img: 'img/pizza.webp', pre: 'بيتزا', items: [
+    { n: 'شي تشكن', d: 'قطع فراخ استربس مع صوص شي تشكن، جبنة موتزاريلا، فلفل ألوان، زيتون، صوص', p: 160 },
+    { n: 'مارجريتا', d: 'جبنة موتزاريلا، فلفل ألوان، زيتون', p: 140 },
+    { n: 'تشكن رانش', d: 'قطع فراخ، صوص رانش، جبنة موتزاريلا، فلفل ألوان، زيتون', p: 160 },
+    { n: 'تشكن باربكيو', d: 'قطع فراخ، صوص باربكيو، جبنة موتزاريلا، فلفل ألوان، زيتون', p: 160 }
+  ]},
+  { id: 'pasta', t: 'باستا', img: 'img/plate1.webp', pre: 'باستا', items: [
+    { n: 'شي تشكن', d: 'قطع استربس، وايت صوص، موتزاريلا', p: 175 },
+    { n: 'نجرسكو', d: 'فراخ، مشروم فريش، وايت صوص، فلفل ألوان، زيتون، جبنة موتزاريلا', p: 185 },
+    { n: 'تشكن الفريدو', d: 'فراخ، مشروم فريش، وايت صوص، جبنة تركي', p: 175 },
+    { n: 'بينك صوص', d: 'فراخ، صوص بينك، جبنة تركي', p: 175 }
+  ]},
+  { id: 'sides', t: 'المقبلات', img: '', items: [
+    { n: 'موتزاريلا ستيكس', p: 70 }, { n: 'حلقات بصل', p: 70 }, { n: 'بطاطس', p: 40 }, { n: 'بطاطس جبنة', p: 80 },
+    { n: 'تشكن فريز', p: 95 }, { n: 'هالبينو فريز', p: 95 }, { n: 'بطاطس رومي مدخن', p: 95 }, { n: 'بطاطس بيكون', p: 95 },
+    { n: 'ريزو', p: 100 }, { n: 'أرز سادة', p: 40 }, { n: 'الكومبو', p: 60 }
+  ]},
+  { id: 'sauces', t: 'الصوصات', img: '', pre: 'صوص', items: [
+    { n: 'رانش', p: 25 }, { n: 'ساوزند آيلاند', p: 25 }, { n: 'باربكيو', p: 25 }, { n: 'سوي تشيلي', p: 25 }, { n: 'شيدر', p: 40 },
+    { n: 'هاني مستر', p: 25 }, { n: 'كلوسلو', p: 30 }, { n: 'صوص حار', p: 25 }, { n: 'هالبينو', p: 25 }, { n: 'تيكساس', p: 25 }
+  ]},
+  { id: 'drinks', t: 'المشروبات', img: '', items: [
+    { n: 'مياه', p: 15 }, { n: 'بيبسي', p: 40 }, { n: 'مانجو', p: 70 }, { n: 'فراولة', p: 70 }, { n: 'جوافة', p: 70 }, { n: 'برتقال', p: 70 }
+  ]}
+];
+
+/* ---- state ---- */
+var CARD = { roast: 1, boxes: 1, strips: 1, mos7ab: 1, burger: 1, sand: 1, pizza: 1, pasta: 1 };   // sections shown as photo cards
+var EXTS = ['jpg', 'webp', 'png'];       // photo file types tried in img/items/<id>.<ext>
+var $ = function (id) { return document.getElementById(id); };
+var lookup = {}, cart = {}, notes = {};
+function labelOf(sec, it) { return (sec.pre ? sec.pre + ' ' : '') + it.n; }
+function norm(s) { return String(s).toLowerCase().replace(/[ً-ٟـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه'); }
+
+
+/* Added only: show sandwich/burger cards smoothly when scrolling to them.
+   Re-initialized after a language switch rebuilds the menu. */
+var foodMotionObserver = null;
+function initFoodMotion() {
+  if (foodMotionObserver) { foodMotionObserver.disconnect(); foodMotionObserver = null; }
+  if (!('IntersectionObserver' in window) ||
+      (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  var cards = document.querySelectorAll('#sec-sand .card, #sec-burger .card');
+  foodMotionObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('food-motion-visible');
+      foodMotionObserver.unobserve(entry.target);
+    });
+  }, { threshold: .08, rootMargin: '0px 0px 40px 0px' });
+  Array.prototype.forEach.call(cards, function(card, index) {
+    card.style.setProperty('--food-delay', ((index % 4) * 95) + 'ms');
+    card.style.setProperty('--food-float-delay', '-' + ((index % 4) * 480) + 'ms');
+    card.classList.add('food-motion-ready');
+    foodMotionObserver.observe(card);
+  });
+}
+
+function buildMenu() {
+  var html = '', chips = '';
+  MENU.forEach(function (sec, si) {
+    chips += '<a href="#sec-' + sec.id + '" data-go="sec-' + sec.id + '" data-chip="' + sec.id + '">' + sec.t + '</a>';
+    var card = !!CARD[sec.id];
+    html += '<section class="sec" id="sec-' + sec.id + '" data-sec><div class="sec-head">' + (sec.img ? '<img src="' + sec.img + '" alt="" aria-hidden="true">' : '') + '<div><h2>' + sec.t + '</h2>' + (sec.note ? '<p>' + sec.note + '</p>' : '') + '</div></div><div class="' + (card ? 'grid' : 'list') + '">';
+    sec.items.forEach(function (it, ii) {
+      var base = si + '-' + ii, label = labelOf(sec, it), opts = '';
+      var sizes = typeof it.p === 'number' ? [['', it.p]] : Object.keys(it.p).map(function (k) { return [k, it.p[k]]; });
+      sizes.forEach(function (s) {
+        var key = base + '|' + s[0];
+        lookup[key] = { label: label + (s[0] ? ' (' + s[0] + ')' : ''), price: s[1] };
+        opts += '<button type="button" class="add" data-k="' + key + '" aria-label="أضف ' + label + (s[0] ? ' ' + s[0] : '') + '">' + (s[0] ? '<small>' + s[0] + '</small>' : '') + s[1] + ' ج</button>';
+      });
+      var s2 = norm(sec.t + ' ' + label + ' ' + (it.d || ''));
+      if (card) {
+        var pic = it.id ? '<img src="img/items/' + it.id + '.' + EXTS[0] + '" data-id="' + it.id + '" data-n="0" data-fb="' + sec.img + '" alt="' + label + '" loading="lazy" decoding="async">' : '<img class="fb" src="' + sec.img + '" alt="" loading="lazy" decoding="async">';
+        html += '<article class="card" data-s="' + s2 + '"><div class="ph">' + pic + '</div><div class="body"><h3>' + it.n + '</h3>' + (it.d ? '<p>' + it.d + '</p>' : '<p></p>') + '<div class="opts">' + opts + '</div></div></article>';
+      } else {
+        html += '<div class="item" data-s="' + s2 + '"><div><h3>' + it.n + '</h3>' + (it.d ? '<p>' + it.d + '</p>' : '') + '</div><div class="opts">' + opts + '</div></div>';
+      }
+    });
+    html += '</div></section>';
+  });
+  html += '<div class="none" id="none" hidden>مفيش نتيجة. جرّب كلمة تانية.</div>';
+  $('menu').innerHTML = html;
+  $('chips').innerHTML = chips;
+  initFoodMotion();
+}
+function keyOf(label) { return Object.keys(lookup).filter(function (k) { return lookup[k].label === label; })[0]; }
+
+function save() { try { localStorage.setItem('cc-cart', JSON.stringify({ c: cart, n: notes })); } catch (e) {} }
+function load() {
+  try {
+    var o = JSON.parse(localStorage.getItem('cc-cart') || '{}');
+    Object.keys(o.c || {}).forEach(function (k) { if (lookup[k] && o.c[k] > 0) { cart[k] = o.c[k]; if (o.n && o.n[k]) notes[k] = o.n[k]; } });
+  } catch (e) {}
+  try {
+    var c = JSON.parse(localStorage.getItem('cc-cust') || '{}');
+    ['name', 'phone', 'address'].forEach(function (f) { if (c[f]) $('f-' + f).value = c[f]; });
+  } catch (e) {}
+}
+function saveCust() { try { localStorage.setItem('cc-cust', JSON.stringify({ name: $('f-name').value, phone: $('f-phone').value, address: $('f-address').value })); } catch (e) {} }
+
+function count() { return Object.keys(cart).reduce(function (a, k) { return a + cart[k]; }, 0); }
+function subtotal() { return Object.keys(cart).reduce(function (a, k) { return a + cart[k] * lookup[k].price; }, 0); }
+function mode() { return document.querySelector('input[name="mode"]:checked').value; }
+function totals() {
+  var sub = subtotal(), fee = 0;
+  if (mode() === 'delivery' && sub > 0 && !(FREE_DELIVERY_OVER && sub >= FREE_DELIVERY_OVER)) fee = DELIVERY_FEE;
+  return { sub: sub, fee: fee, total: sub + fee };
+}
+function digits(s) { return String(s).replace(/[٠-٩]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }); }
+
+/* open / closed */
+function cairoMinutes() {
+  var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+  var h = 0, m = 0; p.forEach(function (x) { if (x.type === 'hour') h = +x.value % 24; if (x.type === 'minute') m = +x.value; });
+  return h * 60 + m;
+}
+function toMin(s) { var a = s.split(':'); return +a[0] * 60 + +a[1]; }
+function openNow() {
+  if (!ENABLE_HOURS) return IS_OPEN;
+  try {
+    var n = cairoMinutes(), o = toMin(HOURS.open), c = toMin(HOURS.close);
+    return o <= c ? (n >= o && n < c) : (n >= o || n < c);
+  } catch (e) { return IS_OPEN; }
+}
+function fmt12(s) { var a = s.split(':'), h = +a[0], suf = h >= 12 ? 'م' : 'ص'; h = h % 12 || 12; return h + (a[1] !== '00' ? ':' + a[1] : '') + ' ' + suf; }
+function refreshOpen() {
+  var open = openNow(), el = $('closed');
+  el.hidden = open;
+  if (!open) el.textContent = ENABLE_HOURS ? 'المطعم مقفول دلوقتي. بنفتح الساعة ' + fmt12(HOURS.open) + '.' : 'المطعم مقفول حاليًا، مش هتقدر تكمل الطلب دلوقتي. جرّب تاني بعدين.';
+}
+
+/* render cart */
+function render() {
+  var n = count(), t = totals();
+  $('cartTopN').textContent = n; $('cbN').textContent = n; $('cbT').textContent = t.total;
+  $('cartbar').hidden = n === 0;
+  var h = '';
+  Object.keys(cart).forEach(function (k) {
+    h += '<div class="line"><div class="top"><b>' + lookup[k].label + '</b><div class="qty"><button type="button" data-q="-1" data-k="' + k + '" aria-label="أقل">−</button><span>' + cart[k] + '</span><button type="button" data-q="1" data-k="' + k + '" aria-label="أكتر">+</button></div><span class="lp">' + (cart[k] * lookup[k].price) + ' ج</span></div><input type="text" data-note="' + k + '" value="' + (notes[k] || '').replace(/"/g, '&quot;') + '" placeholder="ملاحظة على الصنف، مثلًا: من غير مخلل" aria-label="ملاحظة على ' + lookup[k].label + '"></div>';
+  });
+  $('lines').innerHTML = h || '<div class="empty">السلة فاضية. ضيف أصناف من المنيو.</div>';
+  var hasDrink = Object.keys(cart).some(function (k) { return /^(مياه|بيبسي|مانجو|فراولة|جوافة|برتقال)/.test(lookup[k].label); });
+  var ups = ['مياه', 'بيبسي', 'بطاطس'].map(function (l) { return keyOf(l); }).filter(Boolean);
+  $('upsell').hidden = n === 0 || hasDrink;
+  $('upsellRow').innerHTML = ups.map(function (k) { return '<button type="button" data-up="' + k + '">+ ' + lookup[k].label + ' · ' + lookup[k].price + ' ج</button>'; }).join('');
+  var s = '<div><span>المجموع</span><span>' + t.sub + ' ج</span></div>';
+  if (mode() === 'delivery' && n) s += '<div><span>التوصيل</span><span>' + (t.fee ? t.fee + ' ج' : 'مجاني') + '</span></div>';
+  s += '<div class="grand"><span>الإجمالي</span><span>' + t.total + ' ج</span></div>';
+  $('sum').innerHTML = s;
+  $('checkout').hidden = n === 0;
+  $('send').href = waUrl();
+  save();
+}
+
+var orderId = '';
+function newId() { var d = new Date(); return 'CC' + String(d.getDate()).padStart(2, '0') + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(Math.floor(1000 + Math.random() * 9000)); }
+function orderText() {
+  var t = totals(), m = mode();
+  var lines = Object.keys(cart).map(function (k) {
+    return '• ' + cart[k] + ' × ' + lookup[k].label + ' = ' + (cart[k] * lookup[k].price) + ' ج' + (notes[k] ? '\n   ملاحظة: ' + notes[k] : '');
+  });
+  var out = ['طلب جديد من Chez Chicken', 'رقم الطلب: ' + (orderId || '—'), ''].concat(lines, ['']);
+  out.push('المجموع: ' + t.sub + ' ج');
+  if (m === 'delivery') out.push('التوصيل: ' + (t.fee ? t.fee + ' ج' : 'مجاني'));
+  out.push('الإجمالي: ' + t.total + ' ج', '');
+  out.push('طريقة الاستلام: ' + (m === 'delivery' ? 'توصيل' : m === 'takeaway' ? 'استلام' : 'داخل المطعم'));
+  out.push('الاسم: ' + $('f-name').value.trim());
+  out.push('الموبايل: ' + digits($('f-phone').value).trim());
+  if (m === 'delivery') out.push('العنوان: ' + $('f-address').value.trim());
+  if (m === 'dine') out.push('رقم الترابيزة: ' + $('f-table').value.trim());
+  if ($('f-notes').value.trim()) out.push('ملاحظات: ' + $('f-notes').value.trim());
+  out.push('الدفع: كاش عند الاستلام');
+  return out.join('\n');
+}
+function waUrl() { return 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(orderText()); }
+
+function validate() {
+  var m = mode(), t = totals();
+  if (!openNow()) return 'المطعم مقفول حاليًا. جرّب تاني بعدين.';
+  if (!count()) return 'السلة فاضية.';
+  if (MIN_ORDER && t.sub < MIN_ORDER) return 'أقل قيمة للطلب ' + MIN_ORDER + ' ج.';
+  if (!$('f-name').value.trim()) return 'اكتب اسمك.';
+  if (digits($('f-phone').value).replace(/\D/g, '').length < 10) return 'اكتب رقم موبايل صحيح.';
+  if (m === 'delivery' && !$('f-address').value.trim()) return 'اكتب العنوان بالتفصيل.';
+  if (m === 'dine' && !$('f-table').value.trim()) return 'اكتب رقم الترابيزة.';
+  return '';
+}
+function postOrder() {
+  if (!ORDER_ENDPOINT) return;
+  try {
+    var t = totals();
+    var body = { id: orderId, at: new Date().toISOString(), mode: mode(), name: $('f-name').value.trim(), phone: digits($('f-phone').value).trim(), address: $('f-address').value.trim(), table: $('f-table').value.trim(), notes: $('f-notes').value.trim(), total: t.total, items: Object.keys(cart).map(function (k) { return { item: lookup[k].label, qty: cart[k], price: lookup[k].price, note: notes[k] || '' }; }) };
+    fetch(ORDER_ENDPOINT, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+  } catch (e) {}
+}
+
+function toast(msg) {
+  var t = $('toast'); t.textContent = msg || 'اتضاف للسلة'; t.hidden = false;
+  clearTimeout(toast.id); toast.id = setTimeout(function () { t.hidden = true; }, 1100);
+}
+function addKey(k) { cart[k] = (cart[k] || 0) + 1; render(); toast(); }
+function openSheet() { orderId = orderId || newId(); $('sheet').hidden = false; render(); }
+function closeSheet() { $('sheet').hidden = true; }
+
+/* item photos: try jpg, webp, png from img/items/, then fall back to the section photo */
+document.addEventListener('error', function (e) {
+  var el = e.target;
+  if (!el || el.tagName !== 'IMG' || !el.getAttribute('data-id')) return;
+  var n = +el.getAttribute('data-n') + 1;
+  if (n < EXTS.length) { el.setAttribute('data-n', n); el.src = 'img/items/' + el.getAttribute('data-id') + '.' + EXTS[n]; }
+  else { el.removeAttribute('data-id'); el.classList.add('fb'); el.src = el.getAttribute('data-fb'); }
+}, true);
+
+/* search */
+function applySearch() {
+  var q = norm($('q').value.trim()), any = false;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sec]'), function (sec) {
+    var vis = 0;
+    Array.prototype.forEach.call(sec.querySelectorAll('.item, .card'), function (it) {
+      var show = !q || it.getAttribute('data-s').indexOf(q) > -1;
+      it.hidden = !show; if (show) vis++;
+    });
+    sec.hidden = vis === 0; if (vis) any = true;
+  });
+  $('none').hidden = any;
+}
+
+/* scroll spy */
+function spy() {
+  if (!('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var id = e.target.id.replace('sec-', '');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-chip]'), function (a) {
+        var on = a.getAttribute('data-chip') === id; a.classList.toggle('on', on);
+        if (on) { var box = $('chips'); var left = a.offsetLeft - box.clientWidth / 2 + a.clientWidth / 2; try { box.scrollTo({ left: left, behavior: 'smooth' }); } catch (x) {} }
+      });
+    });
+  }, { rootMargin: '-140px 0px -65% 0px' });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sec]'), function (s) { io.observe(s); });
+}
+
+/* ---- wiring ---- */
+buildMenu(); load();
+refreshOpen(); setInterval(refreshOpen, 60000);
+$('phoneShow').textContent = PHONE_SHOW;
+$('waContact').href = 'https://wa.me/' + WHATSAPP;
+$('callContact').href = 'tel:' + PHONE_TEL;
+$('mapLink').href = MAP_URL;
+$('fbLink').href = FACEBOOK;
+if (ENABLE_HOURS) { $('hoursRow').hidden = false; $('hoursShow').textContent = 'من ' + fmt12(HOURS.open) + ' إلى ' + fmt12(HOURS.close); }
+
+document.addEventListener('click', function (e) {
+  var go = e.target.closest('[data-go]');
+  if (go) { e.preventDefault(); var el = $(go.getAttribute('data-go')); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  var add = e.target.closest('.add');
+  if (add) { addKey(add.getAttribute('data-k')); add.classList.remove('pop'); void add.offsetWidth; add.classList.add('pop'); return; }
+  var up = e.target.closest('[data-up]');
+  if (up) { addKey(up.getAttribute('data-up')); return; }
+  var q = e.target.closest('[data-q]');
+  if (q) {
+    var key = q.getAttribute('data-k'); cart[key] = (cart[key] || 0) + Number(q.getAttribute('data-q'));
+    if (cart[key] <= 0) { delete cart[key]; delete notes[key]; }
+    render(); return;
+  }
+  if (e.target === $('sheet')) closeSheet();
+});
+document.addEventListener('input', function (e) {
+  var nt = e.target.getAttribute && e.target.getAttribute('data-note');
+  if (nt) { notes[nt] = e.target.value; save(); $('send').href = waUrl(); }
+});
+$('q').addEventListener('input', applySearch);
+$('cartTop').addEventListener('click', openSheet);
+$('cartOpen').addEventListener('click', openSheet);
+$('sheetClose').addEventListener('click', closeSheet);
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+
+function syncMode() { var m = mode(); $('w-address').hidden = m !== 'delivery'; $('w-table').hidden = m !== 'dine'; render(); }
+Array.prototype.forEach.call(document.querySelectorAll('input[name="mode"]'), function (r) { r.addEventListener('change', syncMode); });
+['f-name', 'f-phone', 'f-address', 'f-table', 'f-notes'].forEach(function (id) {
+  $(id).addEventListener('input', function () { saveCust(); $('send').href = waUrl(); $('err').textContent = ''; });
+});
+$('send').addEventListener('click', function (e) {
+  var msg = validate();
+  if (msg) { e.preventDefault(); $('err').textContent = msg; return; }
+  this.href = waUrl(); postOrder();
+});
+syncMode(); spy();
+
+/* ---- hero background: rising sparks on a slow glow; a video replaces it when HERO_VIDEO is set ---- */
+(function () {
+  var cv = $('fx'), ctx = cv.getContext && cv.getContext('2d'), hero = cv.parentNode;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var W = 0, H = 0, dpr = 1, ps = [], run = true, last = 0, t0 = 0;
+  if (HERO_VIDEO) {
+    var v = $('heroVideo'); v.src = HERO_VIDEO;
+    v.addEventListener('loadeddata', function () { v.classList.add('on'); hero.classList.add('vid'); var p = v.play(); if (p && p.catch) p.catch(function () {}); run = false; });
+  }
+  if (!ctx) return;
+  function size() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = hero.clientWidth; H = hero.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var n = Math.round(Math.min(70, Math.max(26, W / 14)));
+    while (ps.length < n) ps.push(spawn(true));
+    ps.length = n;
+  }
+  function spawn(any) {
+    return { x: Math.random() * W, y: any ? Math.random() * H : H + 10, r: .8 + Math.random() * 2.4, v: 18 + Math.random() * 46,
+      sw: 6 + Math.random() * 22, ph: Math.random() * 6.28, hue: 36 + Math.random() * 18, a: .35 + Math.random() * .6 };
+  }
+  function frame(ts) {
+    if (!run) return;
+    var dt = Math.min(.05, (ts - last) / 1000 || .016); last = ts; if (!t0) t0 = ts;
+    var t = (ts - t0) / 1000;
+    ctx.clearRect(0, 0, W, H);
+    var g = ctx.createRadialGradient(W * (.5 + .18 * Math.sin(t * .15)), H * 1.05, 10, W * .5, H * 1.05, Math.max(W, H) * .8);
+    g.addColorStop(0, 'rgba(255,150,40,.22)'); g.addColorStop(1, 'rgba(255,150,40,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ps.forEach(function (p, i) {
+      p.y -= p.v * dt; p.ph += dt;
+      var x = p.x + Math.sin(p.ph) * p.sw, life = p.y / H;
+      if (p.y < -10) { ps[i] = spawn(false); return; }
+      var al = p.a * Math.min(1, life * 1.6) * (.6 + .4 * Math.sin(t * 3 + i));
+      ctx.beginPath(); ctx.fillStyle = 'hsla(' + p.hue + ',100%,62%,' + Math.max(0, al) + ')';
+      ctx.shadowColor = 'hsla(' + p.hue + ',100%,55%,.9)'; ctx.shadowBlur = 10;
+      ctx.arc(x, p.y, p.r, 0, 6.2832); ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+    requestAnimationFrame(frame);
+  }
+  size();
+  window.addEventListener('resize', size);
+  if (reduce) { run = true; frame(16); run = false; return; }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) run = false; else if (!HERO_VIDEO || !$('heroVideo').classList.contains('on')) { run = true; requestAnimationFrame(frame); } });
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (es) {
+    var on = es[0].isIntersecting; if (HERO_VIDEO && $('heroVideo').classList.contains('on')) return;
+    if (on && !run) { run = true; requestAnimationFrame(frame); } else if (!on) run = false;
+  }).observe(hero);
+  requestAnimationFrame(frame);
+})();
+
+</script>
+
+<script>
+
+/* Bilingual content: separate from the original ordering logic. */
+(function () {
+  var lang='ar';
+  try {lang=localStorage.getItem('cc-lang')==='en'?'en':'ar';}catch(e){}
+  var originalMenu=MENU.map(function(s){return {t:s.t,pre:s.pre,note:s.note,items:s.items.map(function(i){return {n:i.n,d:i.d,p:i.p};})};});
+  var sections={roast:['Broasted Chicken Meals','Broasted meal','Every meal comes with bread, fries and sauce'],boxes:['Meal Boxes','',''],strips:['Chicken Strips Meals','Strips','Every meal comes with sauce, bread and fries'],mos7ab:['Cheesy Chicken Strips','Cheesy strips','Every meal comes with cheddar sauce, bread and fries'],burger:['Chicken Burgers','Burger','Choose single or double'],sand:['Sandwiches','Sandwich','Choose single or double'],pizza:['Pizza','Pizza',''],pasta:['Pasta','Pasta',''],sides:['Sides','',''],sauces:['Sauces','Sauce',''],drinks:['Drinks','','']};
+  var names={
+    roast:['2 Pieces','3 Pieces','5 Pieces','9 Pieces','12 Pieces','18 Pieces'],
+    boxes:['Happy Box','Friends Box','Family Box','Kids Meal'],
+    strips:['3 Pieces','7 Pieces','12 Pieces','20 Pieces'],
+    mos7ab:['3 Pieces','7 Pieces','12 Pieces'],
+    burger:['Chicken Jalapeño','Turbo Chicken Beef','The Ranch','Zastival'],
+    sand:['Classic','Zinger','Chicken Wrap','The Ranch','Rings','Sugar','Crunchy','Chicken Mushroom','Steak Chicken','Chez Chicken Sandwich','The Dinosaur','Fries Wrap'],
+    pizza:['Chez Chicken','Margherita','Chicken Ranch','BBQ Chicken'],
+    pasta:['Chez Chicken','Negresco','Chicken Alfredo','Pink Sauce'],
+    sides:['Mozzarella Sticks','Onion Rings','Fries','Cheese Fries','Chicken Fries','Jalapeño Fries','Smoked Turkey Fries','Bacon Fries','Rizo Rice','Plain Rice','Combo'],
+    sauces:['Ranch','Thousand Island','BBQ','Sweet Chili','Cheddar','Honey Mustard','Coleslaw','Hot Sauce','Jalapeño','Texas'],
+    drinks:['Water','Pepsi','Mango','Strawberry','Guava','Orange']
+  };
+  var ingredients={
+    'برجر فراخ':'chicken burger','صدور فراخ':'chicken breast','فراخ':'chicken','قطع فراخ استربس مع صوص شي تشكن':'chicken strips with Chez Chicken sauce',
+    'قطع فراخ':'chicken pieces','قطع استربس':'chicken strips','لحمة مفرومة مكرملة':'caramelized ground beef','3 طبقات صدور فراخ':'three layers of chicken breast',
+    'جبنة موتزاريلا':'mozzarella cheese','موتزاريلا ستيكس':'mozzarella sticks','موتزاريلا':'mozzarella','جبنة تركي':'Turkish cheese',
+    'خس':'lettuce','خيار مخلل':'pickles','هالبينو':'jalapeño','ساوزند آيلاند':'Thousand Island','صوص ساوزند آيلاند':'Thousand Island sauce',
+    'صوص حار':'hot sauce','هوت صوص':'hot sauce','صوص شيدر':'cheddar sauce','شيدر':'cheddar','رانش':'ranch','صوص رانش':'ranch sauce',
+    'صوص باربكيو':'BBQ sauce','باربكيو':'BBQ','صوص سوي تشيلي':'sweet chili sauce','صوص تيكساس':'Texas sauce','تيكساس':'Texas sauce',
+    'كاتشب':'ketchup','رومي مدخن':'smoked turkey','بيكون':'bacon','فلفل مكرمل':'caramelized pepper','فلفل ألوان':'mixed bell peppers',
+    'حلقات بصل':'onion rings','كلوسلو':'coleslaw','كرنشي':'crunchy topping','مشروم فريش':'fresh mushrooms','بطاطس':'fries',
+    'عيش':'bread','صوص':'sauce','زيتون':'olives','وايت صوص':'white sauce','صوص بينك':'pink sauce',
+    'قطعة بروست':'broasted chicken piece','قطعة استربس':'chicken strip','عصير':'juice',
+    '2 قطعة بروست':'2 broasted chicken pieces','4 قطع بروست':'4 broasted chicken pieces','6 قطع بروست':'6 broasted chicken pieces',
+    '2 قطعة استربس':'2 chicken strips','4 قطع استربس':'4 chicken strips','6 قطع استربس':'6 chicken strips',
+    '3 أرز':'3 rice portions','4 أرز':'4 rice portions'
+  };
+  function description(s) {return (s||'').split('،').map(function(x){x=x.trim();var m=x.match(/^(\d+)\s+(.*)$/);return ingredients[x]||(m?(m[1]+' '+(ingredients[m[2]]||m[2])):x);}).join(', ');}
+  var sizeKeys={ 'سنجل':'Single','دبل':'Double' };
+  function setMenu(useEnglish){
+    MENU.forEach(function(sec,i){var o=originalMenu[i],d=sections[sec.id];sec.t=useEnglish?d[0]:o.t;sec.pre=useEnglish?d[1]:o.pre;sec.note=useEnglish?d[2]:o.note;
+      sec.items.forEach(function(it,j){it.n=useEnglish?names[sec.id][j]:o.items[j].n;it.d=useEnglish?description(o.items[j].d):o.items[j].d;
+        if(typeof o.items[j].p==='object'){it.p=o.items[j].p;}
+      });
+    });
+  }
+  var texts={
+    'cartTop':'Cart','closed':'Restaurant is currently closed. Please try again later.','sheetTitle':'Your cart','sheetClose':'✕',
+    'waContact':'Chat on WhatsApp','callContact':'Call us','mapLink':'Find us on the map','fbLink':'Our Facebook page',
+    'f-name-label':'Name','f-phone-label':'Mobile number','f-address-label':'Full address','f-table-label':'Table number','f-notes-label':'Order notes (optional)',
+    'send':'Send order on WhatsApp'
+  };
+  var staticSelectors=[
+    ['.hero h1','Hot <em>Crispy Chicken</em>, Pizza & Pasta delivered to you','كرسبي <em>سخن</em> وبيتزا وباستا لحد مكانك'],
+    ['.hero p','Broasted chicken, strips, chicken burgers and boxes for friends and family. Pick from the menu and complete your order on WhatsApp.','بروست واستربس وبرجر فراخ وبوكسات للشلة والعيلة. اختار من المنيو وكمّل الطلب على واتساب.'],
+    ['.facts li:nth-child(1)','Zee Hub Mall, Wahat Road','Zee Hub Mall، طريق الواحات'],
+    ['.facts li:nth-child(2)','Cash on delivery','كاش عند الاستلام'],
+    ['.facts li:nth-child(3)','Order via WhatsApp','الطلب على واتساب'],
+    ['.cta','View menu','شوف المنيو'],
+    ['.quick a:nth-child(1)','Sandwiches','سندوتشات'],['.quick a:nth-child(2)','Burgers','برجر'],['.quick a:nth-child(3)','Broasted','بروست'],['.quick a:nth-child(4)','Boxes','بوكسات'],['.quick a:nth-child(5)','Pizza','بيتزا'],['.quick a:nth-child(6)','Pasta','باستا'],
+    ['.contact h2','Order or ask us','اطلب أو اسأل'],
+    ['.contact dt:nth-child(1)','Address','العنوان'],
+    ['.contact dl > div:nth-child(1) dt','Address','العنوان'],['.contact dl > div:nth-child(1) dd','Wahat Road, Zee Hub Mall, next to MSA University','طريق الواحات، Zee Hub Mall، بجوار جامعة MSA'],
+    ['.contact dl > div:nth-child(2) dt','WhatsApp & phone','واتساب وتليفون'],
+    ['#hoursRow dt','Opening hours','مواعيد الشغل'],
+    ['#waContact','Chat on WhatsApp','كلمنا على واتساب'],['#callContact','Call us','اتصل بينا'],['#mapLink','Location on map','الموقع على الخريطة'],['#fbLink','Our Facebook page','صفحتنا على فيسبوك'],
+    ['footer','© 2026 Chez Chicken. All rights reserved.','© 2026 Chez Chicken. كل الحقوق محفوظة.'],
+    ['#cartTop','Cart <b id="cartTopN">0</b>','السلة <b id="cartTopN">0</b>'],
+    ['#sheetTitle','Your cart','سلتك'],['#upsell small','Add to your order','ضيف على طلبك'],
+    ['label[for="m-delivery"]','Delivery','توصيل'],['label[for="m-takeaway"]','Pickup','استلام'],['label[for="m-dine"]','Dine in','داخل المطعم'],
+    ['label[for="f-name"]','Name','الاسم'],['label[for="f-phone"]','Mobile number','رقم الموبايل'],['label[for="f-address"]','Full address','العنوان بالتفصيل'],['label[for="f-table"]','Table number','رقم الترابيزة'],
+    ['label[for="f-notes"]','Order notes (optional)','ملاحظات على الطلب (اختياري)'],
+    ['#send','Send order via WhatsApp','ابعت الطلب على واتساب'],
+    ['.hint','WhatsApp will open with your order ready. Tap Send there to complete your order.','هيفتح واتساب والطلب مكتوب جاهز. اضغط إرسال هناك عشان يوصلنا.']
+  ];
+  var dynamicStrings={'السلة فاضية. ضيف أصناف من المنيو.':'Your cart is empty. Add items from the menu.','مفيش نتيجة. جرّب كلمة تانية.':'No results. Try a different search.','المجموع':'Subtotal','التوصيل':'Delivery','مجاني':'Free','الإجمالي':'Total','اتضاف للسلة':'Added to cart','ملاحظة:':'Note:','ج':'EGP'};
+  function localizeDynamic(root){
+    if(lang!=='en'||!root)return;
+    var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n;
+    while((n=walker.nextNode())){var raw=n.nodeValue,trim=raw.trim();if(dynamicStrings[trim]) n.nodeValue=raw.replace(trim,dynamicStrings[trim]);}
+    root.querySelectorAll('[placeholder]').forEach(function(el){if(el.matches('[data-note]'))el.placeholder='Item note, e.g. no pickles';});
+    root.querySelectorAll('.add').forEach(function(el){el.innerHTML=el.innerHTML.replace(/سنجل/g,'Single').replace(/دبل/g,'Double').replace(/ ج(?!\w)/g,' EGP');el.setAttribute('aria-label',el.getAttribute('aria-label').replace(/^أضف /,'Add ').replace(/ سنجل/,' Single').replace(/ دبل/,' Double'));});
+    root.querySelectorAll('[data-note]').forEach(function(el){el.setAttribute('aria-label',el.getAttribute('aria-label').replace(/^ملاحظة على /,'Note for '));});
+    root.querySelectorAll('.lp').forEach(function(el){el.textContent=el.textContent.replace(' ج',' EGP');});
+    root.querySelectorAll('.upsell button').forEach(function(el){el.textContent=el.textContent.replace(' ج',' EGP');});
+  }
+  var baseRender=render;
+  render=function(){baseRender();localizeDynamic($('lines'));localizeDynamic($('sum'));localizeDynamic($('upsellRow'));$('cbT').parentNode.lastChild.textContent=lang==='en'?' EGP':' ج';$('cartOpen').querySelector('span').firstChild.textContent=lang==='en'?'View cart (':'عرض السلة (';};
+  var baseValidate=validate;
+  validate=function(){
+    var error=baseValidate();
+    if(lang!=='en')return error;
+    var errMap={'المطعم مقفول حاليًا. جرّب تاني بعدين.':'The restaurant is currently closed.','السلة فاضية.':'Your cart is empty.','اكتب اسمك.':'Enter your name.','اكتب رقم موبايل صحيح.':'Enter a valid mobile number.','اكتب العنوان بالتفصيل.':'Enter your full address.','اكتب رقم الترابيزة.':'Enter your table number.'};
+    return errMap[error]||error.replace('أقل قيمة للطلب','Minimum order value').replace(' ج.',' EGP.');
+  };
+  var baseToast=toast;
+  toast=function(msg){baseToast(lang==='en'?(msg||'Added to cart'):msg);};
+  var baseRefresh=refreshOpen;
+  refreshOpen=function(){baseRefresh();if(lang==='en'&&!$('closed').hidden)$('closed').textContent='The restaurant is currently closed. Please try again later.';};
+  function apply(){
+    var english=lang==='en';document.documentElement.lang=lang;document.documentElement.dir=english?'ltr':'rtl';
+    $('app').dir=english?'ltr':'rtl';$('app').lang=lang;
+    $('langToggle').textContent=english?'عربي':'EN';$('langToggle').setAttribute('aria-label',english?'التبديل إلى العربية':'Switch to English');
+    staticSelectors.forEach(function(a){var el=document.querySelector(a[0]);if(el)el.innerHTML=english?a[1]:a[2];});
+    $('q').placeholder=english?'Search menu, e.g. ranch, pizza, 5 pieces':'دوّر في المنيو، مثلًا: رانش، بيتزا، 5 قطع';
+    $('q').setAttribute('aria-label',english?'Search the menu':'بحث في المنيو');
+    $('f-notes').placeholder=english?'Any special instructions?':'';
+    setMenu(english);lookup={};buildMenu();render();applySearch();refreshOpen();
+    if(english)localizeDynamic($('menu'));
+    $('lines').querySelectorAll('[data-q]').forEach(function(el){el.setAttribute('aria-label',english?(el.getAttribute('data-q')==='1'?'Increase quantity':'Decrease quantity'):(el.getAttribute('data-q')==='1'?'أكتر':'أقل'));});
+    $('err').textContent='';
+    $('none').textContent=english?'No results. Try another search.':'مفيش نتيجة. جرّب كلمة تانية.';
+    if(ENABLE_HOURS)$('hoursShow').textContent=english?('From '+HOURS.open+' to '+HOURS.close):('من '+fmt12(HOURS.open)+' إلى '+fmt12(HOURS.close));
+  }
+  $('langToggle').addEventListener('click',function(){lang=lang==='ar'?'en':'ar';try{localStorage.setItem('cc-lang',lang);}catch(e){}apply();});
+  apply();
+})();
+
+</script>
+
+<script id="theme-switch-script">
+(function(){
+  var btn=document.getElementById('themeToggle');
+  var saved='dark';
+  try{saved=localStorage.getItem('cc-theme')==='light'?'light':'dark';}catch(e){}
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    var en=document.documentElement.lang==='en';
+    btn.textContent=t==='dark'?(en?'☀️ Light':'☀️ فاتح'):(en?'🌙 Dark':'🌙 غامق');
+    btn.setAttribute('aria-label',t==='dark'?(en?'Switch to light mode':'التبديل للوضع الفاتح'):(en?'Switch to dark mode':'التبديل للوضع الغامق'));
+    btn.setAttribute('aria-pressed',String(t==='light'));
+  }
+  applyTheme(saved);
+  btn.addEventListener('click',function(){var t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';applyTheme(t);try{localStorage.setItem('cc-theme',t);}catch(e){}});
+  document.getElementById('langToggle').addEventListener('click',function(){applyTheme(document.documentElement.getAttribute('data-theme')||'dark');});
+})();
+</script>
+</body>
+</html>
