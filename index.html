@@ -7,11 +7,14 @@
 <meta property="og:title" content="Chez Chicken">
 <meta property="og:description" content="اطلب بروست واستربس وبيتزا وبوكسات أونلاين، والطلب على واتساب.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="img/og.jpg">
-<link rel="icon" type="image/webp" href="img/mark.webp">
+<meta property="og:image" content="./og.jpg">
+<link rel="icon" type="image/webp" href="./mark.webp">
 <title>Chez Chicken</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Tajawal:wght@400;500;700&family=DM+Serif+Display&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Tajawal:wght@400;500;700&family=DM+Serif+Display&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Tajawal:wght@400;500;700&family=DM+Serif+Display&display=swap"></noscript>
 <style>
 /* Layout: burgundy ground with a gold arch (echoing the logo) holding the food photos in the hero,
    then a sticky search + category strip, one-column menu cards with round photo headers, bottom cart sheet.
@@ -240,12 +243,12 @@ html[data-theme="light"] .cartbar button,html[data-theme="light"] .add,html[data
     <video id="heroVideo" muted loop playsinline preload="auto" aria-hidden="true"></video>
     <div class="wrap">
       <div class="topbar">
-        <div class="brand"><img src="img/mark.webp" alt="Chez Chicken"></div>
+        <div class="brand"><img src="./mark.webp" alt="Chez Chicken"></div>
         <div class="theme-controls"><button id="langToggle" type="button" aria-label="Switch to English">EN</button><button id="themeToggle" type="button" aria-label="الوضع الفاتح" aria-pressed="false">☀️ فاتح</button></div>
         <button class="cart-top" id="cartTop" type="button">السلة <b id="cartTopN">0</b></button>
       </div>
       <div>
-        <img class="logo" src="img/logo.webp" alt="Chez Chicken">
+        <img class="logo" src="./logo.webp" alt="Chez Chicken">
         <h1>كرسبي <em>سخن</em> وبيتزا وباستا لحد مكانك</h1>
         <p>بروست واستربس وبرجر فراخ وبوكسات للشلة والعيلة. اختار من المنيو وكمّل الطلب على واتساب.</p>
         <ul class="facts"><li>Zee Hub Mall، طريق الواحات</li><li>كاش عند الاستلام</li><li>الطلب على واتساب</li></ul>
@@ -253,9 +256,9 @@ html[data-theme="light"] .cartbar button,html[data-theme="light"] .add,html[data
         <nav class="quick" aria-label="اختصارات"><a href="#sec-sand" data-go="sec-sand">سندوتشات</a><a href="#sec-burger" data-go="sec-burger">برجر</a><a href="#sec-roast" data-go="sec-roast">بروست</a><a href="#sec-boxes" data-go="sec-boxes">بوكسات</a><a href="#sec-pizza" data-go="sec-pizza">بيتزا</a><a href="#sec-pasta" data-go="sec-pasta">باستا</a></nav>
       </div>
       <div class="arch" aria-hidden="true">
-        <img src="img/wings.webp" alt="">
-        <img src="img/pizza.webp" alt="">
-        <img src="img/burger.webp" alt="">
+        <img src="./wings.webp" alt="">
+        <img src="./pizza.webp" alt="">
+        <img src="./burger.webp" alt="">
       </div>
     </div>
   </section>
@@ -360,34 +363,34 @@ var SAND = [
   { id: 'fries-wrap', n: 'بطاطس راب', d: 'بطاطس، موتزاريلا ستيكس، صوص ساوزند آيلاند، كاتشب', p: 70 }
 ];
 var MENU = [
-  { id: 'roast', t: 'وجبات بروست', img: 'img/plate2.webp', pre: 'وجبة بروست', note: 'كل وجبة معها عيش وبطاطس وصوص', items: [
+  { id: 'roast', t: 'وجبات بروست', img: './plate2.webp', pre: 'وجبة بروست', note: 'كل وجبة معها عيش وبطاطس وصوص', items: [
     { n: '2 قطعة', d: '2 عيش، بطاطس، صوص', p: 120 }, { n: '3 قطع', d: '2 عيش، بطاطس، صوص', p: 165 },
     { n: '5 قطع', d: '3 عيش، بطاطس، صوص', p: 265 }, { n: '9 قطع', d: '5 عيش، بطاطس، صوص', p: 430 },
     { n: '12 قطعة', d: '7 عيش، بطاطس، صوص، 3 أرز', p: 540 }, { n: '18 قطعة', d: '10 عيش، بطاطس، صوص، 4 أرز', p: 770 }
   ]},
-  { id: 'boxes', t: 'بوكسات', img: 'img/plate3.webp', items: [
+  { id: 'boxes', t: 'بوكسات', img: './plate3.webp', items: [
     { n: 'بوكس السعادة', d: '2 قطعة بروست، 2 قطعة استربس، 2 عيش، بطاطس، صوص، كلوسلو', p: 200 },
     { n: 'بوكس الصحاب', d: '4 قطع بروست، 4 قطع استربس، 4 عيش، بطاطس، صوص، كلوسلو', p: 375 },
     { n: 'بوكس العيلة', d: '6 قطع بروست، 6 قطع استربس، 6 عيش، بطاطس، صوص، كلوسلو', p: 540 },
     { n: 'وجبة الأطفال', d: 'قطعة بروست، قطعة استربس، عيش، عصير', p: 115 }
   ]},
-  { id: 'strips', t: 'وجبات الاستربس', img: 'img/plate1.webp', pre: 'استربس', note: 'كل وجبة معها صوص وعيش وبطاطس', items: [
+  { id: 'strips', t: 'وجبات الاستربس', img: './plate1.webp', pre: 'استربس', note: 'كل وجبة معها صوص وعيش وبطاطس', items: [
     { n: '3 قطع', d: 'صوص، 2 عيش، بطاطس', p: 120 }, { n: '7 قطع', d: 'صوص، 4 عيش، بطاطس', p: 240 },
     { n: '12 قطعة', d: 'صوص، 6 عيش، بطاطس', p: 370 }, { n: '20 قطعة', d: 'صوص، 10 عيش، بطاطس، 3 أرز', p: 620 }
   ]},
-  { id: 'mos7ab', t: 'مسحب جبنة', img: 'img/wings.webp', pre: 'مسحب جبنة', note: 'كل وجبة معها صوص شيدر وعيش وبطاطس', items: [
+  { id: 'mos7ab', t: 'مسحب جبنة', img: './wings.webp', pre: 'مسحب جبنة', note: 'كل وجبة معها صوص شيدر وعيش وبطاطس', items: [
     { n: '3 قطع', d: 'صوص شيدر، 2 عيش، بطاطس', p: 140 }, { n: '7 قطع', d: 'صوص شيدر، 4 عيش، بطاطس', p: 280 },
     { n: '12 قطعة', d: 'صوص شيدر، 6 عيش، بطاطس', p: 440 }
   ]},
-  { id: 'burger', t: 'برجر فراخ', img: 'img/burger.webp', pre: 'برجر', note: 'اختار سنجل أو دبل', items: BURGER },
-  { id: 'sand', t: 'سندوتشات', img: 'img/burger.webp', pre: 'سندوتش', note: 'اختار سنجل أو دبل', items: SAND },
-  { id: 'pizza', t: 'بيتزا', img: 'img/pizza.webp', pre: 'بيتزا', items: [
+  { id: 'burger', t: 'برجر فراخ', img: './burger.webp', pre: 'برجر', note: 'اختار سنجل أو دبل', items: BURGER },
+  { id: 'sand', t: 'سندوتشات', img: './burger.webp', pre: 'سندوتش', note: 'اختار سنجل أو دبل', items: SAND },
+  { id: 'pizza', t: 'بيتزا', img: './pizza.webp', pre: 'بيتزا', items: [
     { n: 'شي تشكن', d: 'قطع فراخ استربس مع صوص شي تشكن، جبنة موتزاريلا، فلفل ألوان، زيتون، صوص', p: 160 },
     { n: 'مارجريتا', d: 'جبنة موتزاريلا، فلفل ألوان، زيتون', p: 140 },
     { n: 'تشكن رانش', d: 'قطع فراخ، صوص رانش، جبنة موتزاريلا، فلفل ألوان، زيتون', p: 160 },
     { n: 'تشكن باربكيو', d: 'قطع فراخ، صوص باربكيو، جبنة موتزاريلا، فلفل ألوان، زيتون', p: 160 }
   ]},
-  { id: 'pasta', t: 'باستا', img: 'img/plate1.webp', pre: 'باستا', items: [
+  { id: 'pasta', t: 'باستا', img: './plate1.webp', pre: 'باستا', items: [
     { n: 'شي تشكن', d: 'قطع استربس، وايت صوص، موتزاريلا', p: 175 },
     { n: 'نجرسكو', d: 'فراخ، مشروم فريش، وايت صوص، فلفل ألوان، زيتون، جبنة موتزاريلا', p: 185 },
     { n: 'تشكن الفريدو', d: 'فراخ، مشروم فريش، وايت صوص، جبنة تركي', p: 175 },
@@ -408,8 +411,9 @@ var MENU = [
 ];
 
 /* ---- state ---- */
+function fbOf(sec, i) { return (sec.id === 'burger' || sec.id === 'sand') ? ['./burger.webp', './burger-a.webp', './burger-b.webp'][i % 3] : sec.img; }
 var CARD = { roast: 1, boxes: 1, strips: 1, mos7ab: 1, burger: 1, sand: 1, pizza: 1, pasta: 1 };   // sections shown as photo cards
-var EXTS = ['jpg', 'webp', 'png'];       // photo file types tried in img/items/<id>.<ext>
+var EXTS = ['jpg', 'webp', 'png'];       // photo file types tried in ./items/<id>.<ext>
 var $ = function (id) { return document.getElementById(id); };
 var lookup = {}, cart = {}, notes = {};
 function labelOf(sec, it) { return (sec.pre ? sec.pre + ' ' : '') + it.n; }
@@ -455,7 +459,7 @@ function buildMenu() {
       });
       var s2 = norm(sec.t + ' ' + label + ' ' + (it.d || ''));
       if (card) {
-        var pic = it.id ? '<img src="img/items/' + it.id + '.' + EXTS[0] + '" data-id="' + it.id + '" data-n="0" data-fb="' + sec.img + '" alt="' + label + '" loading="lazy" decoding="async">' : '<img class="fb" src="' + sec.img + '" alt="" loading="lazy" decoding="async">';
+        var pic = it.id ? '<img src="./items/' + it.id + '.' + EXTS[0] + '" data-id="' + it.id + '" data-n="0" data-fb="' + fbOf(sec, ii) + '" alt="' + label + '" loading="lazy" decoding="async">' : '<img class="fb" src="' + fbOf(sec, ii) + '" alt="" loading="lazy" decoding="async">';
         html += '<article class="card" data-s="' + s2 + '"><div class="ph">' + pic + '</div><div class="body"><h3>' + it.n + '</h3>' + (it.d ? '<p>' + it.d + '</p>' : '<p></p>') + '<div class="opts">' + opts + '</div></div></article>';
       } else {
         html += '<div class="item" data-s="' + s2 + '"><div><h3>' + it.n + '</h3>' + (it.d ? '<p>' + it.d + '</p>' : '') + '</div><div class="opts">' + opts + '</div></div>';
@@ -587,12 +591,12 @@ function addKey(k) { cart[k] = (cart[k] || 0) + 1; render(); toast(); }
 function openSheet() { orderId = orderId || newId(); $('sheet').hidden = false; render(); }
 function closeSheet() { $('sheet').hidden = true; }
 
-/* item photos: try jpg, webp, png from img/items/, then fall back to the section photo */
+/* item photos: try jpg, webp, png from ./items/, then fall back to the section photo */
 document.addEventListener('error', function (e) {
   var el = e.target;
   if (!el || el.tagName !== 'IMG' || !el.getAttribute('data-id')) return;
   var n = +el.getAttribute('data-n') + 1;
-  if (n < EXTS.length) { el.setAttribute('data-n', n); el.src = 'img/items/' + el.getAttribute('data-id') + '.' + EXTS[n]; }
+  if (n < EXTS.length) { el.setAttribute('data-n', n); el.src = './items/' + el.getAttribute('data-id') + '.' + EXTS[n]; }
   else { el.removeAttribute('data-id'); el.classList.add('fb'); el.src = el.getAttribute('data-fb'); }
 }, true);
 
